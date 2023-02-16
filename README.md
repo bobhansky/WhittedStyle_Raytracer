@@ -1,5 +1,5 @@
 # WhittedStyle_Raytracer
-a renderer takes input objects configuration file and render a Whitted-Style Raytracing ppm img
+## a renderer takes input objects configuration file and render a Whitted-Style Raytracing ppm img
 
 
 input file format:
@@ -28,9 +28,13 @@ The **‘background’ color** (using r, g, b components defined on a scale from
 
 >**bkgcolor**   r  g  b
 
-A **‘material’ color** (in terms of r, g, b components defined on a scale from 0-1). The material color should be treated as a state variable, meaning that all subsequently-defined objects should use the immediately-preceding material color
+--------------------------------------------------------- Required attributes end ----------------------------------------------------------
 
->**mtlcolor**   r  g  b
+#### Bellow are optional settings
+
+A **‘material’ color** (components defined on a scale from 0-1). 
+
+>**mtlcolor**   Odr Odg Odb Osr Osg Osb ka kd ks n
 
 A **sphere**
 
@@ -39,3 +43,18 @@ A **sphere**
 **parallel projection**
 
 >**projection**  parallel
+
+
+ **point light**
+>**light** x y z w r g b
+
+**point light with attenuation**
+
+>**attlight** x y z w r g b c1 c2 c3
+
+**depth cueing**
+
+>**depthcueing** dcr dcg dcb amax amin distmax distmin
+
+**shadow**    enable soft shadow
+>**shadow** soft
