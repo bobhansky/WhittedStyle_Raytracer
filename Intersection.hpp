@@ -1,11 +1,10 @@
 #pragma once
 
 #include <float.h>
-
-#include "Object.hpp"
 #include "global.hpp"
 #include "Vector.hpp"
 #include "Material.hpp"
+//#include "Object.hpp"
 
 
 class Object;	// circular dependency issue

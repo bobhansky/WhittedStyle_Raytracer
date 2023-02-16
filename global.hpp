@@ -5,8 +5,8 @@
 #include <math.h>
 #include <algorithm>
 #include <random>
+#include <iostream>
 
-#include "Triangle.hpp"
 
 
 #define M_PI 3.1415926535897
@@ -140,14 +140,7 @@ float getRandomFloat(float i, float j) {
 }
 
 
-// uniformly distributed
-Vector3f randomSampleTriangle(const Triangle& t) {
-	float u = getRandomFloat(0.f,1.f);
-	float v = getRandomFloat(0.f, 1-u);
-	
-	Vector3f res = (1 - u - v) * t.v0 + u * t.v1 + v * t.v2;
-	return res;
-}
+
 
 
 // cout to terminal the progress
