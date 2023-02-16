@@ -12,7 +12,7 @@
 #include "Scene.hpp"
 #include "Sphere.hpp"
 #include "Triangle.hpp"
-#include "material.hpp"
+#include "Material.hpp"
 
 std::vector<std::string> objType = { "sphere", "triangle" };
 
@@ -125,9 +125,10 @@ private:
 			std::string keyWord;
 
 			checkFin();
+			fin >> keyWord;
 			while (!fin.eof()) {
-				fin >> keyWord;
 				processKeyword(keyWord);
+				fin >> keyWord;
 			}
 
 			// check if all the required information are set

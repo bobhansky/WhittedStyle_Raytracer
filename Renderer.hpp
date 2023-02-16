@@ -12,7 +12,7 @@
 #include "Scene.hpp"
 #include "Sphere.hpp"
 #include "Triangle.hpp"
-#include "material.hpp"
+#include "Material.hpp"
 #include "PPMGenerator.hpp"
 
 
@@ -147,11 +147,10 @@ private:
 
 		// loop through all the light sources
 		for (auto& light : g->scene.lightList) {
-
-			// -------Hard shadow
-			if (g->shadowType == 0) {
-				// -----------point light case
-				if (floatEqual(light->pos.w, 1.f)) {
+			// -----Point light case
+			if (floatEqual(light->pos.w, 1.f)) {
+				// ---------------hard shadow
+				if (g->shadowType == 0) {
 					Vector3f lightPos = Vector3f(light->pos.x, light->pos.y, light->pos.z);
 					float d_p_light = (lightPos - inter.pos).norm();	// distance from p to light
 					float attenuation = 1.f;
@@ -172,52 +171,50 @@ private:
 						shadow * light->color * inter.mtlcolor.ks * inter.mtlcolor.specular * attenuation *
 						powf(std::max(h.dot(inter.nDir), 0.f), inter.mtlcolor.n);
 				}
-
-				// -----------directional light case
+				// -----------soft shadow
 				else {
-					Vector3f p_light_dir = normalized(Vector3f(-light->pos.x, -light->pos.y, -light->pos.z));
+					Vector3f lightPos = Vector3f(light->pos.x, light->pos.y, light->pos.z);
+					float d_p_light = (lightPos - inter.pos).norm();	// distance from p to light
+					float attenuation = 1.f;
+					if (light->c1 >= 0.f) attenuation = 1.f / (light->c1 + light->c2 * d_p_light + light->c3 * d_p_light * d_p_light);
+					Vector3f p_light_dir = normalized(lightPos - inter.pos);
 
-					// shadow coefficient		
-					float shadow = getShadowCoeffi(inter, light->pos);
+					// shadow coefficient
+					float shadow = getAreaLightShadowCoeffi(inter, light.get());
 
 					// calculate diffuse term
 					diffuse = diffuse +
-						shadow * light->color * inter.mtlcolor.kd * inter.mtlcolor.diffuse *
+						shadow * light->color * inter.mtlcolor.kd * inter.mtlcolor.diffuse * attenuation *
 						std::max(p_light_dir.dot(normalized(inter.nDir)), 0.f);
 
 					// calculate specular term
 					Vector3f h = normalized(p_light_dir + p_eye_dir);
 					specular = specular +
-						shadow * light->color * inter.mtlcolor.ks * inter.mtlcolor.specular *
+						shadow * light->color * inter.mtlcolor.ks * inter.mtlcolor.specular * attenuation *
 						powf(std::max(h.dot(inter.nDir), 0.f), inter.mtlcolor.n);
 				}
 			}
-			// ---------soft shadow		only for POINT light /actually area light
+
+			// ------directional light case
 			else {
-				if (!floatEqual(light->pos.w, 1.f)) throw std::runtime_error("Can't generate soft shadow for directional light\n");
+				Vector3f p_light_dir = normalized(Vector3f(-light->pos.x, -light->pos.y, -light->pos.z));
 
-				Vector3f lightPos = Vector3f(light->pos.x, light->pos.y, light->pos.z);
-				float d_p_light = (lightPos - inter.pos).norm();	// distance from p to light
-				float attenuation = 1.f;
-				if (light->c1 >= 0.f) attenuation = 1.f / (light->c1 + light->c2 * d_p_light + light->c3 * d_p_light * d_p_light);
-				Vector3f p_light_dir = normalized(lightPos - inter.pos);
-
-				// shadow coefficient
-				float shadow = getAreaLightShadowCoeffi(inter, light.get());
+				// shadow coefficient		
+				float shadow = getShadowCoeffi(inter, light->pos);
 
 				// calculate diffuse term
 				diffuse = diffuse +
-					shadow * light->color * inter.mtlcolor.kd * inter.mtlcolor.diffuse * attenuation *
+					shadow * light->color * inter.mtlcolor.kd * inter.mtlcolor.diffuse *
 					std::max(p_light_dir.dot(normalized(inter.nDir)), 0.f);
 
 				// calculate specular term
 				Vector3f h = normalized(p_light_dir + p_eye_dir);
 				specular = specular +
-					shadow * light->color * inter.mtlcolor.ks * inter.mtlcolor.specular * attenuation *
+					shadow * light->color * inter.mtlcolor.ks * inter.mtlcolor.specular *
 					powf(std::max(h.dot(inter.nDir), 0.f), inter.mtlcolor.n);
 			}
-
 		}
+			
 		res = ambient + diffuse + specular;
 
 		// do depthcueing 

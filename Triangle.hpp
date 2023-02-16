@@ -1,6 +1,9 @@
 #pragma once
 
 #include "Object.hpp"
+#include "Intersection.hpp"
+
+
 
 class Triangle : public Object{
 public:
@@ -49,3 +52,13 @@ public:
 	}
 
 };
+
+
+// uniformly distributed
+Vector3f randomSampleTriangle(const Triangle& t) {
+	float u = getRandomFloat(0.f, 1.f);
+	float v = getRandomFloat(0.f, 1 - u);
+
+	Vector3f res = (1 - u - v) * t.v0 + u * t.v1 + v * t.v2;
+	return res;
+}

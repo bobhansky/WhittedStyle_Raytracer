@@ -26,6 +26,9 @@ public:
 	now define this triangle
 	*/
 	void intialize() {
+		// do not initialize if this light is a diretional light
+		if (floatEqual(pos.w, 0.f)) return;
+
 		triangle.v0 = Vector3f(pos.x, pos.y, pos.z);
 		triangle.v1 = Vector3f(pos.x+1, pos.y, pos.z-1);
 		triangle.v2 = Vector3f(pos.x, pos.y, pos.z - 1);
