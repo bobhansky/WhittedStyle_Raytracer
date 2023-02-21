@@ -28,15 +28,15 @@ The **‘background’ color** (using r, g, b components defined on a scale from
 
 >**bkgcolor**   r  g  b
 
---------------------------------------------------------- Required attributes end ----------------------------------------------------------
+--------------------------------------------------------- Required attributes ends ----------------------------------------------------------
 
 #### Bellow are optional settings
 
-A **‘material’ color** (components defined on a scale from 0-1). 
+**‘material’ color** (components defined on a scale from 0-1). 
 
 >**mtlcolor**   Odr Odg Odb Osr Osg Osb ka kd ks n
 
-A **sphere**
+**sphere**
 
 >**sphere**   cx  cy  cz  r
 
@@ -44,6 +44,9 @@ A **sphere**
 
 >**projection**  parallel
 
+**textrue**
+all following object will use texture data as diffuse term
+>** textrue**  filename
 
  **point light**
 >**light** x y z w r g b
@@ -58,3 +61,35 @@ A **sphere**
 
 **shadow**    enable soft shadow
 >**shadow** soft
+
+**Vertex** 
+# list of vertex positions
+
+v   x1 y1 z1
+
+v   x2 y2 z2
+
+v   x3 y3 z3
+
+v   x4 y4 z4
+
+# list of vertex normal vectors
+
+vn   nx1 ny1 nz1
+
+vn   nx2 ny2 nz2
+
+# list of texture coordinates
+
+vt   u1 v1
+
+vt   u2 v2
+
+# list of triangle definitions, consisting of appropriate indices into the vertex array, starting at 1 (not 0)
+
+<pre>
+f   v1 v2 v3                             // flat-shaded triangle
+f   v1//vn1    v2//vn2    v3//vn3        // smooth-shaded triangle 
+f   v1/vt1     v2/vt2     v3/vt3         // flat-shaded textured triangle 
+f   v1/vt1/vn1  v2/vt2/vn2   v3/vt3/vn3  // smooth-shaded textured triangle 
+</pre>
