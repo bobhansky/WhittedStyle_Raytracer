@@ -5,6 +5,7 @@
 #include "Renderer.hpp"
 
 #include <string>
+#include <regex>
 
 
 
@@ -16,6 +17,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	PPMGenerator g(argv[1]);
+	
 	Renderer r(&g);
 	r.render();
 	g.generate();

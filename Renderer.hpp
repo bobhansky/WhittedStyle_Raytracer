@@ -128,6 +128,13 @@ private:
 
 		// if ray has no intersection, return bkgcolor
 		if (!inter.intersected) return g->bkgcolor;
+		if (inter.obj->isLight) return inter.obj->mtlcolor.diffuse;	// if hits light avatar, return the light color
+
+		// if texture is activated, change mtlcolor.diffuse to texture data
+		if (! FLOAT_EQUAL(-1.f, inter.textPos.x) && !FLOAT_EQUAL(-1.f, inter.textPos.y)) {
+			inter.mtlcolor.diffuse = g->texture.getRGBat(inter.textPos.x, inter.textPos.y);
+			int a = 0;
+		}
 
 		// if have the nearest intersection, calculate color
 		return blinnPhongShader(origin, inter);
@@ -148,7 +155,7 @@ private:
 		// loop through all the light sources
 		for (auto& light : g->scene.lightList) {
 			// -----Point light case
-			if (floatEqual(light->pos.w, 1.f)) {
+			if (FLOAT_EQUAL(light->pos.w, 1.f)) {
 				// ---------------hard shadow
 				if (g->shadowType == 0) {
 					Vector3f lightPos = Vector3f(light->pos.x, light->pos.y, light->pos.z);

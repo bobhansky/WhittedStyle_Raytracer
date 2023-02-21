@@ -17,12 +17,8 @@ public:
 	float t = FLT_MAX;	// pos = rayPos + t * rayDir
 	Vector3f pos;
 	Vector3f nDir; // normal direction
+	Vector2f textPos;	// texture coordinates if any	(-1, -1) means no texture
 	Material mtlcolor;
 	Object *obj = nullptr;		// this intersection is on which object	
 
-
-	// only for triangle
-	// barycentric coordinates of the intersected point
-	float u = 0;
-	float v = 0;
 };
