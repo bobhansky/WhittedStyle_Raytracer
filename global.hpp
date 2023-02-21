@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <random>
 #include <iostream>
+#include <stdio.h>
 
 
 
@@ -82,7 +83,7 @@ float degree2Radians(const float& d) {
 }
 
 // check if two float numbers are equal
-bool floatEqual(const float& x, const float& y) {
+bool FLOAT_EQUAL(const float& x, const float& y) {
 	return (fabs(x - y) < 0.00001);
 }
 
@@ -139,10 +140,6 @@ float getRandomFloat(float i, float j) {
 	return dist(rng);	
 }
 
-
-
-
-
 // cout to terminal the progress
 void showProgress(float prog) {
 	int barWidth = 60;
@@ -154,4 +151,20 @@ void showProgress(float prog) {
 		else std::cout << " ";
 	}
 	std::cout << int(prog * 100.0) << " %\r";
+}
+
+
+// safely get vec3f element in an vec3f array
+Vector3f getEleIn(std::vector<Vector3f>& arr, int index) {
+	if (index >= arr.size() || index < 0) {
+		throw std::runtime_error(index + " is out of bound: array has size: " + arr.size());
+	}
+	return arr.at(index);
+}
+
+Vector2f getEleIn(std::vector<Vector2f>& arr, int index) {
+	if (index >= arr.size() || index < 0) {
+		throw std::runtime_error(index + " is out of bound: array has size: " + arr.size());
+	}
+	return arr.at(index);
 }

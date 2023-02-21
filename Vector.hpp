@@ -35,6 +35,25 @@ public:
 	}
 };
 
+class Vector2f {
+public:
+	float x;
+	float y;
+	Vector2f(float xval, float yval) : x(xval), y(yval) {}
+	Vector2f() {
+		x = -1.f;
+		y = -1.f;
+	}
+
+	Vector2f operator*(const float& c) {
+		return Vector2f(x * c, y * c);
+	}
+	Vector2f operator+(const Vector2f& v) const
+	{
+		return Vector2f(x + v.x, y + v.y);
+	}
+};
+
 
 
 class Vector3f {

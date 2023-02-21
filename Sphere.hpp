@@ -36,11 +36,11 @@ public:
 
 		inter.intersected = false;
 		// miss, no real solution
-		if (floatEqual(t1, FLT_MAX) && floatEqual(t2, FLT_MAX)) {
+		if (FLOAT_EQUAL(t1, FLT_MAX) && FLOAT_EQUAL(t2, FLT_MAX)) {
 			return false;
 		}
 		// one soluion
-		else if (floatEqual(t1, t2)) {
+		else if (FLOAT_EQUAL(t1, t2)) {
 			// intersection is behind the ray direction, then false
 			if (t1 < 0) return false;
 			else {
@@ -75,6 +75,7 @@ public:
 			inter.mtlcolor = this->mtlcolor;
 			inter.pos = orig + inter.t * dir;
 			inter.nDir = normalized(inter.pos - centerPos);
+			inter.textPos = Vector2f();		// no texture coordinates by now
 			return true;
 		}
 
