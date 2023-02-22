@@ -87,7 +87,7 @@ private:
 	std::ofstream fout;
 	const char* inputName;
 	std::vector<Vector3i> rgb;		// pixel data
-	Texture texture;				// texture data
+	std::vector<Texture> textures;				// texture data
 	//------------------ reading data
 	int width = -1;
 	int height = -1;
@@ -100,6 +100,8 @@ private:
 	std::vector<Vector3f> vertices;		// triangle vertex array
 	std::vector<Vector3f> normals;		// vertex normal array
 	std::vector<Vector2f> textCoords;   // texture coordinates array
+	int textIndex = -1;		// texture index, always points to the last element in the textures array
+	bool isTexutreOn = false;
 
 	int parallel_projection = 0;  // 0 for perspective, 1 for orthographic
 	int shadowType = 0;			 // 0 for hard shadow, 1 for soft shadow
@@ -206,7 +208,11 @@ private:
 			s->centerPos.y = std::stof(t1);
 			s->centerPos.z = std::stof(t2);
 			s->radius = std::stof(t3);
-			s->isTextureActivated = texture.isActivated;
+			// see if texure is enable
+			if (isTexutreOn) {
+				s->isTextureActivated = true;
+				s->textureIndex = textIndex;	// set the texture index
+			}
 
 			// push it into scene.objList
 			scene.add(std::move(s));
@@ -250,6 +256,12 @@ private:
 				&& FLOAT_EQUAL(1.f, s->mtlcolor.ka) && FLOAT_EQUAL(1.f, s->mtlcolor.kd)
 				&& FLOAT_EQUAL(1.f, s->mtlcolor.ks) && FLOAT_EQUAL(0.f, s->mtlcolor.n))
 				s->isLight = true;
+
+			// see if texure is enable
+			if (isTexutreOn) {
+				s->isTextureActivated = true;
+				s->textureIndex = textIndex;	// set the texture index
+			}
 
 			scene.add(std::move(s));
 			break;
@@ -433,7 +445,7 @@ private:
 			mtlcolor.ks = std::stof(t8);
 			mtlcolor.n = std::stof(t9);
 
-			texture.isActivated = false;		// do not use texture data as Object diffuse term
+			isTexutreOn = false;		// do not use texture data as Object diffuse term
 		}
 
 		// read shadow config
@@ -468,12 +480,13 @@ private:
 		else if (!key.compare("texture")) {
 			checkFin(); fin >> a;
 			loadTexture(a.c_str());
-			texture.isActivated = true;		// replace mtlcolor's diffuse term with texture data
+			isTexutreOn = true;		// replace mtlcolor's diffuse term with texture data
+			textIndex++;					// next texture being read uses a different texutre index
 		}
 
 		// read object
 		else if (existIn(key, objType)) {
-		readObject(key);
+			readObject(key);
 		}
 
 		else {
@@ -595,6 +608,7 @@ private:
 		}
 	}
 
+	// f   v1/vt1   v2/vt2   v3/vt3
 	void processFlatText(std::string& t1, std::string& t2, std::string t3, Triangle& t) {
 		int iv;
 		int it;
@@ -683,7 +697,6 @@ private:
 				t.uv2 = getEleIn(textCoords, it - 1);
 			}
 		}
-		t.isTextureActivated = texture.isActivated;
 	}
 
 
@@ -712,11 +725,13 @@ private:
 			exit(-1);
 		}
 
+		Texture temptext;
+
 		checkPosInt(b1); checkPosInt(b2);
 		width = std::stoi(b1);
 		height = std::stoi(b2);
-		texture.width = width;
-		texture.height = height;
+		temptext.width = width;
+		temptext.height = height;
 
 		input >> b0;	// for 255
 		// read data
@@ -728,8 +743,9 @@ private:
 				r = std::stoi(b0);
 				g = std::stoi(b1);
 				b = std::stoi(b2);
-				texture.rgb.emplace_back(Vector3f (r/255.f, g/255.f, b/255.f));
+				temptext.rgb.emplace_back(Vector3f (r/255.f, g/255.f, b/255.f));
 			}
 		}
+		textures.emplace_back(temptext);
 	}
 };

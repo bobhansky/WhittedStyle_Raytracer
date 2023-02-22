@@ -39,7 +39,8 @@ public:
 		if (FLOAT_EQUAL(t1, FLT_MAX) && FLOAT_EQUAL(t2, FLT_MAX)) {
 			return false;
 		}
-		// one soluion
+
+		// ONE soluion
 		else if (FLOAT_EQUAL(t1, t2)) {
 			// intersection is behind the ray direction, then false
 			if (t1 < 0) return false;
@@ -51,11 +52,24 @@ public:
 				inter.mtlcolor = this->mtlcolor;
 				inter.pos = orig + inter.t * dir;
 				inter.nDir = normalized(inter.pos - centerPos);
+				if (isTextureActivated)
+				{
+					// calculate the uv coordinate of this intersection
+					float u, v;
+					float phi = acosf(inter.nDir.z);
+					v = phi / M_PI;
+
+					float theta = atan2f(inter.nDir.y, inter.nDir.x);
+					u = 0.5 + theta / (2.f * M_PI);
+
+					inter.textPos = Vector2f(u, v);
+					inter.textureIndex = this->textureIndex;
+				}
 				return true;
 			}
 
 		}
-		// two solution
+		// TWO solution
 		else {
 			if (t1 >= 0 && t2 >= 0) {
 				inter.t = fmin(t1, t2);
@@ -75,10 +89,26 @@ public:
 			inter.mtlcolor = this->mtlcolor;
 			inter.pos = orig + inter.t * dir;
 			inter.nDir = normalized(inter.pos - centerPos);
-			inter.textPos = Vector2f();		// no texture coordinates by now
+			if (isTextureActivated)
+			{
+				// calculate the uv coordinate of this intersection
+				float u, v;
+				float phi = acos(inter.nDir.z);
+				v = phi / M_PI;
+
+				float theta = atan2(inter.nDir.y, inter.nDir.x);	// return [-pi, pi]
+				// we need to map it to [0, 1]
+				if (theta < 0) theta += 2 * M_PI;	// trigonometric functions are periodic
+				u = (theta / (2.f * M_PI));			// 0 + [0, 1]    then if theta == 0, it is the left most point in width
+
+				// or 
+				// u = 0.5 + (theta / (2.f * M_PI));  // 0.5 + [-0.5, 0.5]	  then if theta == 0, it is the middle point in width
+
+				inter.textPos = Vector2f(u, v);
+				inter.textureIndex = this->textureIndex;
+			}
 			return true;
 		}
-
 		return false;
 	}
 };

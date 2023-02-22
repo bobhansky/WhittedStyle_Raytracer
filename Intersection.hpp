@@ -17,7 +17,10 @@ public:
 	float t = FLT_MAX;	// pos = rayPos + t * rayDir
 	Vector3f pos;
 	Vector3f nDir; // normal direction
+
 	Vector2f textPos;	// texture coordinates if any	(-1, -1) means no texture
+	int textureIndex = -1;
+
 	Material mtlcolor;
 	Object *obj = nullptr;		// this intersection is on which object	
 
