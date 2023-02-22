@@ -113,11 +113,11 @@ private:
 	// return the result color
 	Vector3f traceRay(const Vector3f& origin, const Vector3f& dir) {
 		Intersection inter;
-		Intersection interTemp;
 
 		// loop through all the objects in the scene and find the nearest intersection
 		// const Class &: const lvalue reference
 		for (const auto& obj : g->scene.objList) {
+			Intersection interTemp;
 			if (obj->intersect(origin, dir, interTemp)) {	// intersect also update intersection
 				// if the ray hits this object first, then we update intersection
 				if (interTemp.t < inter.t - 0.000001) {		// dealling with float number
@@ -132,8 +132,8 @@ private:
 
 		// if texture is activated, change mtlcolor.diffuse to texture data
 		if (! FLOAT_EQUAL(-1.f, inter.textPos.x) && !FLOAT_EQUAL(-1.f, inter.textPos.y)) {
-			inter.mtlcolor.diffuse = g->texture.getRGBat(inter.textPos.x, inter.textPos.y);
-			int a = 0;
+			inter.mtlcolor.diffuse = g->textures.at(inter.textureIndex)
+				.getRGBat(inter.textPos.x, inter.textPos.y);
 		}
 
 		// if have the nearest intersection, calculate color

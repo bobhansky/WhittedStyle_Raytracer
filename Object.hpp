@@ -18,4 +18,5 @@ public:
 	bool isLight = false;		// if this object is a light source
 								// if this light avatar exist, then it must manually match the position of the light
 	bool isTextureActivated = false;
+	int textureIndex = -1;
 };

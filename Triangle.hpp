@@ -14,7 +14,7 @@ public:
 
 	// normal direction of 3 vertices
 	Vector3f n0, n1, n2;
-	Vector2f uv0, uv1, uv2;	// texture coordinate u,v   (-1,-1) initially
+	Vector2f uv0, uv1, uv2;	// texture coordinate u,v   (-1,-1) initially means no texture 
 
 	// Using Moller Trumbore Algorithm to update the intersection between ray and triangle
 	bool intersect(const Vector3f& orig, const Vector3f& dir, Intersection& inter) override {
@@ -45,10 +45,13 @@ public:
 			// also get the interpolated normal direction
 			// must normalize this interpolated direction!!!   2/19/2023 by bokitian
 			inter.nDir = normalized((n0 * (1 - res.y - res.z)) + n1 * res.y + n2 * res.z);
-			// if this triangle has uv coordinates, then do interpolation
-			if( !FLOAT_EQUAL(-1.f,uv0.x) && !FLOAT_EQUAL(-1.f, uv0.y))
+			// if this triangle's texture is activated, then do interpolation to 
+			// calculate texture coordinates
+			if (isTextureActivated)
+			{
 				inter.textPos = uv0 * (1 - res.y - res.z) + uv1 * res.y + uv2 * res.z;
-
+				inter.textureIndex = this->textureIndex;
+			}
 			return true;
 		}
 		return false;
@@ -80,7 +83,14 @@ public:
 			inter.mtlcolor = this->mtlcolor;
 			// must normalize this interpolated direction!!!   2/19/2023 by bokitian
 			inter.nDir = normalized((n0 * a) + n1 *b + n2 * g);
-			
+
+			// if this triangle's texture is activated, then do interpolation to 
+			// calculate texture coordinates
+			if (isTextureActivated)
+			{
+				inter.textPos = uv0 * (1 - res.y - res.z) + uv1 * res.y + uv2 * res.z;
+				inter.textureIndex = this->texttureIndex;
+			}
 			return true;
 		}
 		return false;
