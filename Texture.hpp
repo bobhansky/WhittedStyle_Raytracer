@@ -6,6 +6,7 @@
 
 class Texture {
 public:
+	std::string name;
 	int width = 0;
 	int height = 0;
 	bool isActivated = false;			// only useful in reading input file, use this state to initialize the object

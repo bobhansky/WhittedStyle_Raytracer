@@ -20,6 +20,7 @@ public:
 
 	Vector2f textPos;	// texture coordinates if any	(-1, -1) means no texture
 	int textureIndex = -1;
+	int normalMapIndex = -1;
 
 	Material mtlcolor;
 	Object *obj = nullptr;		// this intersection is on which object	
