@@ -136,6 +136,12 @@ private:
 				.getRGBat(inter.textPos.x, inter.textPos.y);
 		}
 
+		// if do shading with normal map
+		if (inter.normalMapIndex != -1) {
+			changeNormalDir(inter);
+			int a = 1;
+		}
+
 		// if have the nearest intersection, calculate color
 		return blinnPhongShader(origin, inter);
 	}
@@ -293,4 +299,68 @@ private:
 		return sum / sampleNum;
 	}
 
+	// TBN transformation matrix to change the dir of normal
+	void changeNormalDir(Intersection& inter) {
+		Texture& nMap = g->normalMaps.at(inter.normalMapIndex);
+		Vector3f color = nMap.getRGBat(inter.textPos.x, inter.textPos.y);
+
+		switch (inter.obj->objectType)
+		{
+		
+			
+		case TRIANGLE: {
+			Triangle* t = static_cast<Triangle*>(inter.obj);
+			// our triangle start from lower left corner and go counterclockwise
+			// but in this algorithm the v0 should be the upper left corner// which is our v2
+			// so e1 e2 should be:
+
+			Vector3f e1 = t->v1 - t->v0;
+			Vector3f e2 = t->v2 - t->v0;
+			Vector3f nDir = crossProduct(e1, e2); // note the order!
+			nDir = normalized(nDir);
+
+			float deltaU1 = t->uv1.x - t->uv0.x;
+			float deltaV1 = t->uv1.y - t->uv1.y;
+
+			float deltaU2 = t->uv2.x - t->uv0.x;
+			float deltaV2 = t->uv2.y - t->uv0.y;
+
+			float coef = 1 / (-deltaU1 * deltaV2 + deltaV1 * deltaU2);
+
+			Vector3f T = coef * (-deltaV2 * e1 + deltaV1 * e2);
+			Vector3f B = coef * (-deltaU2 * e1 + deltaU1 * e2);
+			T = normalized(T);
+			B = normalized(B);
+
+			Vector3f res;
+			res.x = T.x * color.x + B.x * color.y + nDir.x * color.z;
+			res.y = T.y * color.x + B.y * color.y + nDir.y * color.z;
+			res.z = T.z * color.x + B.z * color.y + nDir.z * color.z;
+
+			inter.nDir = normalized(res);
+			break;
+		}
+					 
+
+		case SPEHRE: {
+			Vector3f nDir = inter.nDir;
+			Vector3f T = Vector3f(-nDir.y / sqrtf(nDir.x * nDir.x + nDir.y * nDir.y),
+				nDir.x / sqrtf(nDir.x * nDir.x + nDir.y * nDir.y), 0);
+			
+			Vector3f B = crossProduct(nDir, T);
+
+			Vector3f res;
+			res.x = T.x * color.x + B.x * color.y + nDir.x * color.z;
+			res.y = T.y * color.x + B.y * color.y + nDir.y * color.z;
+			res.z = T.z * color.x + B.z * color.y + nDir.z * color.z;
+
+			inter.nDir = normalized(res);
+			break;
+		}
+		
+		default:
+			break;
+		}
+
+	}
 };

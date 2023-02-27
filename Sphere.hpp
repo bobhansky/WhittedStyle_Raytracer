@@ -56,14 +56,20 @@ public:
 				{
 					// calculate the uv coordinate of this intersection
 					float u, v;
-					float phi = acosf(inter.nDir.z);
+					float phi = acos(inter.nDir.z);
 					v = phi / M_PI;
 
-					float theta = atan2f(inter.nDir.y, inter.nDir.x);
-					u = 0.5 + theta / (2.f * M_PI);
+					float theta = atan2(inter.nDir.y, inter.nDir.x);	// return [-pi, pi]
+					// we need to map it to [0, 1]
+					if (theta < 0) theta += 2 * M_PI;	// trigonometric functions are periodic
+					u = (theta / (2.f * M_PI));			// 0 + [0, 1]    then if theta == 0, it is the left most point in width
+
+					// or 
+					// u = 0.5 + (theta / (2.f * M_PI));  // 0.5 + [-0.5, 0.5]	  then if theta == 0, it is the middle point in width
 
 					inter.textPos = Vector2f(u, v);
 					inter.textureIndex = this->textureIndex;
+					inter.normalMapIndex = normalMapIndex;
 				}
 				return true;
 			}
@@ -106,6 +112,7 @@ public:
 
 				inter.textPos = Vector2f(u, v);
 				inter.textureIndex = this->textureIndex;
+				inter.normalMapIndex = normalMapIndex;
 			}
 			return true;
 		}

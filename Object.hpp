@@ -5,6 +5,12 @@
 #include "Material.hpp"
 #include "Intersection.hpp"
 
+enum OBJTYPE
+{
+	TRIANGLE,
+	SPEHRE
+};
+
 class Object {
 public:
 	virtual ~Object() {};
@@ -18,5 +24,8 @@ public:
 	bool isLight = false;		// if this object is a light source
 								// if this light avatar exist, then it must manually match the position of the light
 	bool isTextureActivated = false;
-	int textureIndex = -1;
+	int textureIndex = -1;		// diffuse color map index
+	int normalMapIndex = -1;    // normal map index
+	OBJTYPE objectType;
+	
 };

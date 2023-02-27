@@ -5,9 +5,7 @@
 #include "Renderer.hpp"
 
 #include <string>
-#include <regex>
-
-
+#include <chrono>
 
 
 int main(int argc, char* argv[]) {
@@ -16,11 +14,16 @@ int main(int argc, char* argv[]) {
 		return 0;
 	}
 
+	auto start = std::chrono::system_clock::now();		// #include <chrono>
+
 	PPMGenerator g(argv[1]);
 	
 	Renderer r(&g);
 	r.render();
 	g.generate();
 
+	auto end = std::chrono::system_clock::now();
+	std::cout << "\nTime consumed: \n";
+	std::cout<< std::chrono::duration_cast<std::chrono::seconds>(end - start).count() << " seconds\n";
 	return 0;
 }

@@ -86,8 +86,9 @@ private:
 	std::ifstream fin;
 	std::ofstream fout;
 	const char* inputName;
-	std::vector<Vector3i> rgb;		// pixel data
-	std::vector<Texture> textures;				// texture data
+	std::vector<Vector3i> rgb;			// pixel data
+	std::vector<Texture> textures;		// texture data
+	std::vector<Texture> normalMaps;    // normalMap array
 	//------------------ reading data
 	int width = -1;
 	int height = -1;
@@ -100,12 +101,15 @@ private:
 	std::vector<Vector3f> vertices;		// triangle vertex array
 	std::vector<Vector3f> normals;		// vertex normal array
 	std::vector<Vector2f> textCoords;   // texture coordinates array
-	int textIndex = -1;		// texture index, always points to the last element in the textures array
-	bool isTexutreOn = false;
+
+	bool isTextureOn = false;
+	int textIndex = -1;					// texture index, always points to the activated texture in the textures array
+	int bumpIndex = -1;					// normal map index, always points to the activated normal Map in the normalMap array
+										// in input file, write "bump ..." once then activate it once, -1 means inactivated
 
 	int parallel_projection = 0;  // 0 for perspective, 1 for orthographic
-	int shadowType = 0;			 // 0 for hard shadow, 1 for soft shadow
-	Material mtlcolor;			// temp buffer for material color	default 0 0 0
+	int shadowType = 0;			  // 0 for hard shadow, 1 for soft shadow
+	Material mtlcolor;			  // temp buffer for material color	default 0 0 0
 		// ******* depthcueing *******
 		bool depthCueing = false;	// depthcueing flag
 		Vector3f dc;				// depthcueing color
@@ -114,22 +118,10 @@ private:
 	//----------------- reading data ends
 	friend class Renderer;
 
-
-	// read the input file to initialize PPMGenerator
-	// check if the input file is in the desired format:
-	// imsize 512 256
-	// eye 0 0 0
-	// viewdir 0 0 -1
-	// hfov 130
-	// updir 0 1 1
-	// bkgcolor 0.1 0.1 0.1
-	// mtlcolor 0 1 0
-	// sphere -0.5 -1 -8 3
-	// mtlcolor 1 0 0
-	// sphere 3 1 -3 1
-	// if we can initialize our generator, it's fine (ignore the characters after height)
-	// otherwise prompt ERROR and exit
-
+	/// <summary>
+	/// read the input file recursively and initialize the essential data for 
+	/// viewing, check if all the viewing settings are initialized
+	/// </summary>
 	void initialize() {
 		try {
 			std::string keyWord;
@@ -208,10 +200,19 @@ private:
 			s->centerPos.y = std::stof(t1);
 			s->centerPos.z = std::stof(t2);
 			s->radius = std::stof(t3);
+			s->objectType = OBJTYPE::SPEHRE;
+
 			// see if texure is enable
-			if (isTexutreOn) {
+			if (isTextureOn) {
 				s->isTextureActivated = true;
 				s->textureIndex = textIndex;	// set the texture index
+
+
+				// use the normaltexture
+				if (bumpIndex != -1) {
+					s->normalMapIndex = bumpIndex;
+					bumpIndex = -1;
+				}
 			}
 
 			// push it into scene.objList
@@ -245,6 +246,8 @@ private:
 			else if (std::regex_match(t0, flat_text) && std::regex_match(t0, flat_text)
 				&& std::regex_match(t0, flat_text))
 				processFlatText(t0, t1, t2, t);
+			else throw std::runtime_error("f face information is not valid");
+
 
 
 			std::unique_ptr<Triangle> s = std::make_unique<Triangle>(t);
@@ -258,10 +261,17 @@ private:
 				s->isLight = true;
 
 			// see if texure is enable
-			if (isTexutreOn) {
+			if (isTextureOn) {
 				s->isTextureActivated = true;
 				s->textureIndex = textIndex;	// set the texture index
+
+				// use the normaltexture
+				if (bumpIndex != -1) {
+					s->normalMapIndex = bumpIndex;
+					bumpIndex = -1;
+				}
 			}
+			s->objectType = OBJTYPE::TRIANGLE;
 
 			scene.add(std::move(s));
 			break;
@@ -445,7 +455,7 @@ private:
 			mtlcolor.ks = std::stof(t8);
 			mtlcolor.n = std::stof(t9);
 
-			isTexutreOn = false;		// do not use texture data as Object diffuse term
+			isTextureOn = false;		// do not use texture data as Object diffuse term
 		}
 
 		// read shadow config
@@ -477,11 +487,57 @@ private:
 		distmin = std::stof(t6);
 		}
 
+		// color texture
 		else if (!key.compare("texture")) {
+			int size0 = textures.size();
 			checkFin(); fin >> a;
-			loadTexture(a.c_str());
-			isTexutreOn = true;		// replace mtlcolor's diffuse term with texture data
-			textIndex++;					// next texture being read uses a different texutre index
+			loadTexture(a.c_str(), textures);
+			isTextureOn = true;		// replace mtlcolor's diffuse term with texture data
+
+			int size1 = textures.size();
+			// if a(the name of the texture) is loaded before
+			// then point the texture index to it in the array
+			if (size0 == size1) {
+				for (int i = 0; i < textures.size(); i++) {
+					if (!textures.at(i).name.compare(a)) {
+						textIndex = i;
+						break;
+					}
+				}
+			}
+			else textIndex = size1 - 1;
+		}
+		
+		// normal map
+		else if (!key.compare("bump")) {
+			int size0 = normalMaps.size();
+			checkFin(); fin >> a;
+			loadTexture(a.c_str(), normalMaps);
+			isTextureOn = true;		// replace mtlcolor's diffuse term with texture data
+
+			int size1 = normalMaps.size();
+			// if a(the name of the texture) is loaded before
+			// then point the texture index to it in the array
+			if (size0 == size1) {
+				for (int i = 0; i < normalMaps.size(); i++) {
+					if (!normalMaps.at(i).name.compare(a)) {
+						bumpIndex = i;
+						break;
+					}
+				}
+			}
+			else {
+				bumpIndex = size1 - 1;
+
+				// recover to requiered format (tangent plane)
+				for (int i = 0; i < normalMaps[bumpIndex].rgb.size();i++) {
+					Vector3f& c = normalMaps[bumpIndex].rgb[i];
+					c = c * 2.f;
+					c.x = c.x - 1.f;
+					c.y = c.y - 1.f;
+					c.z = c.z - 1.f;
+				}
+			}
 		}
 
 		// read object
@@ -700,8 +756,15 @@ private:
 	}
 
 
-	// read the file "name" and store it's ascii ppm data into texture
-	void loadTexture(const char* name) {
+	// read the file "name" and store it's ascii ppm data into textList
+	void loadTexture(const char* name, std::vector<Texture>& textList) {
+		 //if texture is loaded before, do not reload this texture
+		for (int i = 0; i < textList.size();i++) {
+			if (!textList.at(i).name.compare(name)) {
+				return;
+			}
+		}
+
 		std::ifstream input;
 		input.open(name, std::ios_base::in);
 		if (!input.is_open()) {
@@ -726,6 +789,7 @@ private:
 		}
 
 		Texture temptext;
+		temptext.name = std::string(name);
 
 		checkPosInt(b1); checkPosInt(b2);
 		width = std::stoi(b1);
@@ -746,6 +810,6 @@ private:
 				temptext.rgb.emplace_back(Vector3f (r/255.f, g/255.f, b/255.f));
 			}
 		}
-		textures.emplace_back(temptext);
+		textList.emplace_back(temptext);
 	}
 };

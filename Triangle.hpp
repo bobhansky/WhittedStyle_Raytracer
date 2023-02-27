@@ -51,6 +51,7 @@ public:
 			{
 				inter.textPos = uv0 * (1 - res.y - res.z) + uv1 * res.y + uv2 * res.z;
 				inter.textureIndex = this->textureIndex;
+				inter.normalMapIndex = this->normalMapIndex;
 			}
 			return true;
 		}

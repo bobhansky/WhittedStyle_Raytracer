@@ -8,6 +8,7 @@
 #include <iostream>
 #include <stdio.h>
 
+#include "Vector.hpp"
 
 
 #define M_PI 3.1415926535897
