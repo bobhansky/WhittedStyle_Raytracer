@@ -6,6 +6,7 @@
 #include<string>
 #include<vector>
 #include<cmath>
+#include<stack>
 
 #include "Vector.hpp"
 #include "global.hpp"
@@ -15,6 +16,8 @@
 #include "Material.hpp"
 #include "PPMGenerator.hpp"
 
+
+#define MAX_DEPTH 9
 
 /// <summary>
 /// this is the class perform computer graphics algorithms
@@ -92,12 +95,20 @@ public:
 					rayDir = n;
 					eyeLocation = pixelPos - d * n;		// - d * n  only to set a distance between the eye location and near plane(enlarged)
 				}
-
-				Vector3f res = traceRay(eyeLocation, rayDir);
+				// trace ray into each pixel
+				Vector3f res = traceRay(eyeLocation, rayDir, 0);
 				color.x = 255 * std::min(res.x, 1.f);
 				color.y = 255 * std::min(res.y, 1.f);
 				color.z = 255 * std::min(res.z, 1.f);
+
+				// debug helper  3/20/2023
+				//if (y == 288 && x == 422) {		// 288 423
+				//	int a = 1;
+				//}
+				// if Texture::getRGBat() does not clamp uv, we have out of bounds
+				// exception when y == 288 x == 422, eta_world == 1.0, sphere.eta == 1.3
 			}
+
 			showProgress((float)y / g->height);
 		}
 		showProgress(1.f);
@@ -107,31 +118,36 @@ public:
 private:
 	PPMGenerator* g;
 
-
 	// trace a ray into the scene, record the time of the FIRST intersection  and its corresponding mtlColor
 	// into Intersection object
+	// origin is the origin of the ray
+	// dir is ray direction
+	// depth is the number of bounces of this ray
+	// ior is the stack storing the current ior, it is not a reference.
 	// return the result color
-	Vector3f traceRay(const Vector3f& origin, const Vector3f& dir) {
-		Intersection inter;
+	Vector3f traceRay(const Vector3f& origin, const Vector3f& dir, int depth) {
+		if (depth >= MAX_DEPTH) return Vector3f();		// if this exceeds max bounces time, return (0,0,0)
 
+		Intersection inter;
 		// loop through all the objects in the scene and find the nearest intersection
 		// const Class &: const lvalue reference
 		for (const auto& obj : g->scene.objList) {
 			Intersection interTemp;
 			if (obj->intersect(origin, dir, interTemp)) {	// intersect also update intersection
 				// if the ray hits this object first, then we update intersection
-				if (interTemp.t < inter.t - 0.000001) {		// dealling with float number
-					inter = interTemp;		// update the intersection object for future calculation
+				if (interTemp.t < inter.t - 0.00001) {		// dealling with float number
+					inter = interTemp;
 				}
 			}
 		}
 
 		// if ray has no intersection, return bkgcolor
 		if (!inter.intersected) return g->bkgcolor;
-		if (inter.obj->isLight) return inter.obj->mtlcolor.diffuse;	// if hits light avatar, return the light color
+		// if hits light avatar, return the light color
+		if (inter.obj->isLight) return inter.obj->mtlcolor.diffuse;
 
 		// if texture is activated, change mtlcolor.diffuse to texture data
-		if (! FLOAT_EQUAL(-1.f, inter.textPos.x) && !FLOAT_EQUAL(-1.f, inter.textPos.y)) {
+		if (!FLOAT_EQUAL(-1.f, inter.textPos.x) && !FLOAT_EQUAL(-1.f, inter.textPos.y)) {
 			inter.mtlcolor.diffuse = g->textures.at(inter.textureIndex)
 				.getRGBat(inter.textPos.x, inter.textPos.y);
 		}
@@ -139,19 +155,98 @@ private:
 		// if do shading with normal map
 		if (inter.normalMapIndex != -1) {
 			changeNormalDir(inter);
-			int a = 1;
 		}
 
 		// if have the nearest intersection, calculate color
-		return blinnPhongShader(origin, inter);
+		Vector3f blinnPhongRes = Vector3f();
+		// do not only do blinnPhone when intersection point 
+		// is at outer surface cuz trans
+		blinnPhongRes = blinnPhongShader(origin, inter);
+
+		// calculate reflection and transmittance contribution
+		Vector3f rayOrig = inter.pos;
+		Vector3f reflectRes = Vector3f();
+		Vector3f transmiRes = Vector3f();
+		Vector3f N = normalized(inter.nDir);
+		float fr = 0;
+		float eta_i = 0, eta_t = 0;
+
+		// 3/18/2023 23:59:  deal with reflection and refrection individually 
+		// when reflection, we are not entering or leaving the object 
+		// check if we are entering a object or escaping from it
+		
+		// get ior depending on the location of incident ray
+		// N.dot(-dir)
+		float cosN_Dir = N.dot(-dir);
+		if (cosN_Dir > 0) {	// if incident ray is outside
+			eta_i = g->eta;
+			eta_t = inter.mtlcolor.eta;
+
+			fr = fresnel(dir, N, eta_i, eta_t);
+		}
+		else { // incident ray is inside
+			eta_i = inter.mtlcolor.eta;
+			eta_t = g->eta;	// get previous medium's ior
+
+			fr = fresnel(dir, N, eta_i, eta_t);
+		}
+		Vector3f refractDir = getRefractionDir(dir, N, eta_i, eta_t);
+		if (FLOAT_EQUAL(0, refractDir.norm())) 
+			fr = 1.f;
+
+
+		// ****************** REFLECTION ******************
+		// if the object is reflective, then calculate reflection contribution
+		if (!FLOAT_EQUAL(0.f, inter.mtlcolor.ks)) {
+			// reflection ray NEVER enters the object
+
+			// do Ray origin offset to avoid acne
+			Vector3f reflectDir = normalized(getReflectionDir(dir, inter.nDir));
+			float cosAngle = normalized(reflectDir).dot(N);
+			// surface normal always points outward direction
+			// if angle between surface normal and reflection dir > 90 degree
+			// then we are inside of the object
+			// other wise we are outside 
+			rayOrig = cosAngle < 0 ? rayOrig - 0.00005f * N
+				: rayOrig + 0.00005f * N;
+
+			Vector3f R_lambda = traceRay(rayOrig, reflectDir, depth + 1);
+			reflectRes = fr * R_lambda;
+		}
+		// ****************** TRANSMITTANCE ******************
+		// 3/21/2023:
+		// exchange calculation order with REFLECTION gives a strange incorrect result
+		// if the object is not fully opaque, then calculate transmittance contribution
+		// if fr == 1, then we have no transmittance contribution (total internal reflection)
+		if (!FLOAT_EQUAL(1.f, inter.mtlcolor.alpha) && !FLOAT_EQUAL(1.f, fr)) {
+			refractDir = normalized(refractDir);
+			Vector3f T_lambda = Vector3f();
+
+			float cos_refra_N = refractDir.dot(N);
+			if (cos_refra_N < 0) {	// refraction ray is on the opposite side of N
+				// then we enter the obj
+				// do rayOrig shifting
+				rayOrig = rayOrig - 0.0001f * N;
+			}
+			else {	// refraction ray is on the same side of N
+				// then we leave the obj
+				rayOrig = rayOrig + 0.0001f * N;
+			}
+
+			T_lambda = traceRay(rayOrig, refractDir, depth + 1);
+			transmiRes = (1 - fr) * (1 - inter.mtlcolor.alpha) * T_lambda;
+
+		}
+
+		return blinnPhongRes + reflectRes + transmiRes;
 	}
 
 
 	// use Blinn Phon reflectance model to calculate the color
-	// return the calculated color
-	Vector3f blinnPhongShader(const Vector3f& eyePos, Intersection& inter) {
+	// return the calculated color returned to rayOrigin
+	Vector3f blinnPhongShader(const Vector3f& rayOrig, Intersection& inter) {
 		// p is the intersection point
-		Vector3f p_eye_dir = normalized(eyePos - inter.pos);
+		Vector3f p_eye_dir = normalized(rayOrig - inter.pos);
 		// calculate ambient term
 		Vector3f ambient = inter.mtlcolor.ka * inter.mtlcolor.diffuse;
 		Vector3f diffuse;
@@ -162,50 +257,33 @@ private:
 		for (auto& light : g->scene.lightList) {
 			// -----Point light case
 			if (FLOAT_EQUAL(light->pos.w, 1.f)) {
+				Vector3f lightPos = Vector3f(light->pos.x, light->pos.y, light->pos.z);
+				float d_p_light = (lightPos - inter.pos).norm();	// distance from p to light
+				float attenuation = 1.f;
+				if (light->c1 >= 0.f) attenuation = 1.f / (light->c1 + light->c2 * d_p_light + light->c3 * d_p_light * d_p_light);
+				Vector3f p_light_dir = normalized(lightPos - inter.pos);
+
+				// shadow coefficient
+				float shadow = 0;
 				// ---------------hard shadow
 				if (g->shadowType == 0) {
-					Vector3f lightPos = Vector3f(light->pos.x, light->pos.y, light->pos.z);
-					float d_p_light = (lightPos - inter.pos).norm();	// distance from p to light
-					float attenuation = 1.f;
-					if (light->c1 >= 0.f) attenuation = 1.f / (light->c1 + light->c2 * d_p_light + light->c3 * d_p_light * d_p_light);
-					Vector3f p_light_dir = normalized(lightPos - inter.pos);
-
-					// shadow coefficient
-					float shadow = getShadowCoeffi(inter, lightPos);
-
-					// calculate diffuse term
-					diffuse = diffuse +
-						shadow * light->color * inter.mtlcolor.kd * inter.mtlcolor.diffuse * attenuation *
-						std::max(p_light_dir.dot(normalized(inter.nDir)), 0.f);
-
-					// calculate specular term
-					Vector3f h = normalized(p_light_dir + p_eye_dir);
-					specular = specular +
-						shadow * light->color * inter.mtlcolor.ks * inter.mtlcolor.specular * attenuation *
-						powf(std::max(h.dot(inter.nDir), 0.f), inter.mtlcolor.n);
+					shadow = getShadowCoeffi(inter, lightPos);
 				}
-				// -----------soft shadow
+				// ---------------soft shadow
 				else {
-					Vector3f lightPos = Vector3f(light->pos.x, light->pos.y, light->pos.z);
-					float d_p_light = (lightPos - inter.pos).norm();	// distance from p to light
-					float attenuation = 1.f;
-					if (light->c1 >= 0.f) attenuation = 1.f / (light->c1 + light->c2 * d_p_light + light->c3 * d_p_light * d_p_light);
-					Vector3f p_light_dir = normalized(lightPos - inter.pos);
-
-					// shadow coefficient
-					float shadow = getAreaLightShadowCoeffi(inter, light.get());
-
-					// calculate diffuse term
-					diffuse = diffuse +
-						shadow * light->color * inter.mtlcolor.kd * inter.mtlcolor.diffuse * attenuation *
-						std::max(p_light_dir.dot(normalized(inter.nDir)), 0.f);
-
-					// calculate specular term
-					Vector3f h = normalized(p_light_dir + p_eye_dir);
-					specular = specular +
-						shadow * light->color * inter.mtlcolor.ks * inter.mtlcolor.specular * attenuation *
-						powf(std::max(h.dot(inter.nDir), 0.f), inter.mtlcolor.n);
+					shadow = getAreaLightShadowCoeffi(inter, light.get());
 				}
+
+				// calculate diffuse term
+				diffuse = diffuse +
+					shadow * light->color * inter.mtlcolor.kd * inter.mtlcolor.diffuse * attenuation *
+					std::max(p_light_dir.dot(normalized(inter.nDir)), 0.f);
+
+				// calculate specular term
+				Vector3f h = normalized(p_light_dir + p_eye_dir);
+				specular = specular +
+					shadow * light->color * inter.mtlcolor.ks * inter.mtlcolor.specular * attenuation *
+					powf(std::max(h.dot(inter.nDir), 0.f), inter.mtlcolor.n);
 			}
 
 			// ------directional light case
@@ -232,7 +310,7 @@ private:
 
 		// do depthcueing 
 		if (g->depthCueing) {
-			float p_eye_dist = (inter.pos - eyePos).norm();
+			float p_eye_dist = (inter.pos - g->eyePos).norm();
 			float alpha = 0;
 			if (p_eye_dist <= g->distmin) alpha = g->amax;
 			else if (p_eye_dist >= g->distmax) alpha = g->amin;
@@ -253,15 +331,18 @@ private:
 
 		// loop through all the objects in the scene 
 		// if there's one valid intersection, thrn return 0
+		float res = 1;
 		for (auto& i : g->scene.objList) {
 			if (i.get() == p.obj) continue;			// do not test intersection with itself
 			if (i->isLight) continue;				// do not test with light avatar
 			Intersection p_light_inter;
 
-			if (i->intersect(orig, raydir, p_light_inter)) return 0;
+			if (i->intersect(orig, raydir, p_light_inter)) {
+				res = res * (1 - p_light_inter.mtlcolor.alpha);
+			}
 		}
 		// no intersection
-		return 1;
+		return res;
 	}
 
 	// overload for directional light
@@ -274,15 +355,17 @@ private:
 
 		// loop through all the objects in the scene 
 		// if there's one valid intersection, thrn return 0
+		float res = 1;
 		for (auto& i : g->scene.objList) {
 			if (i.get() == p.obj) continue;			// do not test intersection with itself
 			if (i->isLight) continue;				// do not test with light avatar
 			Intersection p_light_inter;
 
-			if (i->intersect(orig, raydir, p_light_inter)) return 0;
+			if (i->intersect(orig, raydir, p_light_inter)) {
+				res = res * (1 - p_light_inter.mtlcolor.alpha);
+			}
 		}
-		// no intersection
-		return 1;
+		return res;
 	}
 
 
@@ -311,8 +394,6 @@ private:
 		case TRIANGLE: {
 			Triangle* t = static_cast<Triangle*>(inter.obj);
 			// our triangle start from lower left corner and go counterclockwise
-			// but in this algorithm the v0 should be the upper left corner// which is our v2
-			// so e1 e2 should be:
 
 			Vector3f e1 = t->v1 - t->v0;
 			Vector3f e2 = t->v2 - t->v0;

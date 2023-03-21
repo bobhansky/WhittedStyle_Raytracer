@@ -152,6 +152,9 @@ void showProgress(float prog) {
 		else std::cout << " ";
 	}
 	std::cout << int(prog * 100.0) << " %\r";
+	//if (int(prog * 100.0) == 47) {
+	//	int a = 1;
+	//}
 }
 
 
@@ -168,4 +171,77 @@ Vector2f getEleIn(std::vector<Vector2f>& arr, int index) {
 		throw std::runtime_error(index + " is out of bound: array has size: " + arr.size());
 	}
 	return arr.at(index);
+}
+
+
+// fresnel, get the specular reflection fraction 
+float fresnel(const Vector3f& Incident, const Vector3f& normal, const float eta_i, const float eta_t) {
+
+	Vector3f I = normalized(-Incident);
+	Vector3f N = normalized(normal);
+	// there are two possible cases:
+	// 1. ray is bouncing at outer surface
+	// 2. ray os bouncing at innner surface
+	// if ray is bouncing at inner surface (I dot N < 0)
+	// reverse N direction
+	float cosI_N = I.dot(N);
+	if (cosI_N < 0) N = -N;
+	
+	// The Schlick approximation defines the Fresnel
+	// reflectance coefficient using the function :
+	// Fr = F0 + (1–F0 )(1–cos(theta_i))^5
+
+	// Schlick approximation: a faster approach to define F0
+	float F0 = powf(((eta_t - eta_i) / (eta_t + eta_i)), 2.f);	
+	float Fr = F0 + (1 - F0) * (powf(1 - (I.dot(N)), 5.f));
+	//if (eta_i > eta_t && Fr > 0.95f && eta_t > 0.3f) {
+	//	int a = 1;
+	//}
+
+
+	return Fr;
+}
+
+// get the reflection direction (un-normalized) by given incident ray and inter's normal direction 
+Vector3f getReflectionDir(const Vector3f& incident, const Vector3f& normal) {
+	Vector3f I = -normalized(incident);
+	Vector3f N = normalized(normal);
+	// may delete this when we finished 
+	float cosI_N = I.dot(N);
+	if (cosI_N < 0) N = -N;
+
+	return 2 * (N.dot(I)) * N - I;
+}
+
+// get the transmittance ray direction  (un-normalized)
+// incident: ray dir from source to this intersection
+// normal: the normal direction of the point
+// eta: indices of refraction
+Vector3f getRefractionDir(const Vector3f& incident, const Vector3f& normal, float eta_i, float eta_t) {
+	// see 03-15.raytracing.pdf page 68
+	// additional notes:
+	// there are two possible cases:
+	// 1. ray is traveling from outside to inside of the obj
+	// 2. ray is traveling from inside of the obj to outside
+	// since we define object's normal pointing toward the outside,
+	// we can check the sign of I dot N to tell which case it is
+	Vector3f I = normalized(-incident);
+	Vector3f N = normalized(normal);
+	float cos_theta_i = N.dot(I);
+	if (cos_theta_i < 0) {
+		N = -N;
+		cos_theta_i = -cos_theta_i;
+	}
+
+	float sin_theta_i = sqrtf(1 - powf(cos_theta_i, 2));
+	float sin_theta_t = (eta_i / eta_t) * sin_theta_i;
+
+	// check total internal reflection case:
+	// if it is the case, return 0 0 0, meanning no refraction dir
+	if (sin_theta_i > (eta_t / eta_i)) 
+		return Vector3f();
+
+	float cos_theta_t = sqrtf(1 - powf(sin_theta_t, 2));
+
+	return cos_theta_t * (-N) + eta_i / eta_t * (cos_theta_i * N - I);
 }

@@ -30,7 +30,7 @@ public:
 
 		Vector3f res = left * rightVec;		// t u v are in res now
 
-		const float EPSILON = 0.00001;    // float number comparison
+		const float EPSILON = 0.00001f;    // float number comparison
 		// if t > 0 && (1-b1-b2) > 0 &&  b1 > 0 && b2 >0 
 		// positive tnear and the intersection point can be represented as 
 		// barycentric coordinate INSIDE of this triangle
