@@ -20,6 +20,11 @@ public:
 
 		int x = u * width;
 		int y = v * height;
-		return getEleIn(rgb, y * width + x);
+		// float precision might lead to out of bounds 
+		// so clamp it
+		int index = y * width + x;
+		if (index < 0) index = 0;
+		if (index >= rgb.size()) index = rgb.size()-1;
+		return getEleIn(rgb, index);
 	}
 };

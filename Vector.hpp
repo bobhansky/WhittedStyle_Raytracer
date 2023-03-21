@@ -94,6 +94,10 @@ public:
 	{
 		return Vector3f(x + v.x, y + v.y, z + v.z);
 	}
+	Vector3f operator - () const 
+	{ 
+		return Vector3f(-x, -y, -z); 
+	}
 
 	// dot product
 	float dot(const Vector3f& v) {
@@ -113,7 +117,7 @@ public:
 
 };
 
-
+// return the normalized version of vector v
 inline Vector3f normalized(const Vector3f& v) {
 	float mag = sqrtf((v.x * v.x + v.y * v.y + v.z * v.z));
 	if (mag > 0) {
@@ -123,8 +127,8 @@ inline Vector3f normalized(const Vector3f& v) {
 	return v;
 }
 
-
-
+// return the crossProduct of v1 and v2
 Vector3f crossProduct(const Vector3f& v1, const Vector3f& v2) {
 	return Vector3f(v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z, v1.x * v2.y - v1.y * v2.x);
 }
+

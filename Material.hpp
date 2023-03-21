@@ -12,6 +12,9 @@ public:
 	float ks = 0;
 	float n = 0;			// highlights shininess power coefficient
 
+	float alpha;			// opacity 
+	float eta;				// index of refraction
+
 
 	// copy assignment operator
 	Material& operator= (const Material& other) {
@@ -27,6 +30,9 @@ public:
 			this->kd = other.kd;
 			this->ks = other.ks;
 			this->n = other.n;
+
+			this->alpha = other.alpha;
+			this->eta = other.eta;
 		}
 		return *this;
 	}
