@@ -3,7 +3,7 @@
 #include "Object.hpp"
 #include "Intersection.hpp"
 
-
+extern bool PRINT;
 
 class Triangle : public Object{
 public:
@@ -35,6 +35,9 @@ public:
 		// positive tnear and the intersection point can be represented as 
 		// barycentric coordinate INSIDE of this triangle
 		// then ray and triangle intersect with each others
+
+		// if (res.x < 0.0001f) return false;
+
 		if (res.x + EPSILON > 0 && 1 - res.y - res.z + EPSILON > 0 && res.y + EPSILON > 0 && res.z + EPSILON > 0) {
 			// then update intersection
 			inter.intersected = true;
