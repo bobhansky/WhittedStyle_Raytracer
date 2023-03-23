@@ -20,6 +20,11 @@ float lerp(float x, float v0, float v1) {
 	return v0 + x * (v1 - v0);
 }
 
+inline float clamp(const float& lo, const float& hi, const float& v)
+{
+	return std::max(lo, std::min(hi, v));
+}
+
 
 // check if str is convertable to a positive integer
 // if there's a char other than 0 to 9
@@ -85,7 +90,7 @@ float degree2Radians(const float& d) {
 
 // check if two float numbers are equal
 bool FLOAT_EQUAL(const float& x, const float& y) {
-	return (fabs(x - y) < 0.00001);
+	return (fabs(x - y) < 0.00001f);
 }
 
 /// <summary
@@ -114,6 +119,9 @@ void solveQuadratic(float& t1, float& t2, float& A, float& B, float& C) {
 		t1 = (-B + sqrtf(discriminant)) / 2 * A;
 		t2 = (-B - sqrtf(discriminant)) / 2 * A;
 	}
+	
+	// always make t1 the smaller result
+	if (t1 > t2) std::swap(t1, t2);
 }
 
 
@@ -176,7 +184,6 @@ Vector2f getEleIn(std::vector<Vector2f>& arr, int index) {
 
 // fresnel, get the specular reflection fraction 
 float fresnel(const Vector3f& Incident, const Vector3f& normal, const float eta_i, const float eta_t) {
-
 	Vector3f I = normalized(-Incident);
 	Vector3f N = normalized(normal);
 	// there are two possible cases:
@@ -194,10 +201,6 @@ float fresnel(const Vector3f& Incident, const Vector3f& normal, const float eta_
 	// Schlick approximation: a faster approach to define F0
 	float F0 = powf(((eta_t - eta_i) / (eta_t + eta_i)), 2.f);	
 	float Fr = F0 + (1 - F0) * (powf(1 - (I.dot(N)), 5.f));
-	//if (eta_i > eta_t && Fr > 0.95f && eta_t > 0.3f) {
-	//	int a = 1;
-	//}
-
 
 	return Fr;
 }
@@ -206,10 +209,7 @@ float fresnel(const Vector3f& Incident, const Vector3f& normal, const float eta_
 Vector3f getReflectionDir(const Vector3f& incident, const Vector3f& normal) {
 	Vector3f I = -normalized(incident);
 	Vector3f N = normalized(normal);
-	// may delete this when we finished 
-	float cosI_N = I.dot(N);
-	if (cosI_N < 0) N = -N;
-
+	
 	return 2 * (N.dot(I)) * N - I;
 }
 
@@ -228,6 +228,8 @@ Vector3f getRefractionDir(const Vector3f& incident, const Vector3f& normal, floa
 	Vector3f I = normalized(-incident);
 	Vector3f N = normalized(normal);
 	float cos_theta_i = N.dot(I);
+	cos_theta_i = clamp(-1, 1, cos_theta_i);
+
 	if (cos_theta_i < 0) {
 		N = -N;
 		cos_theta_i = -cos_theta_i;
@@ -245,3 +247,5 @@ Vector3f getRefractionDir(const Vector3f& incident, const Vector3f& normal, floa
 
 	return cos_theta_t * (-N) + eta_i / eta_t * (cos_theta_i * N - I);
 }
+
+

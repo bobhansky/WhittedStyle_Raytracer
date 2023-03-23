@@ -2,6 +2,7 @@
 
 #include "Object.hpp"
 
+extern bool PRINT;
 class Sphere : public Object{
 public:
 	Vector3f centerPos;		// center position
@@ -35,6 +36,8 @@ public:
 		solveQuadratic(t1, t2, A, B, C);
 
 		inter.intersected = false;
+
+
 		// miss, no real solution
 		if (FLOAT_EQUAL(t1, FLT_MAX) && FLOAT_EQUAL(t2, FLT_MAX)) {
 			return false;
@@ -43,7 +46,9 @@ public:
 		// ONE soluion
 		else if (FLOAT_EQUAL(t1, t2)) {
 			// intersection is behind the ray direction, then false
-			if (t1 < 0) return false;
+			if (t1 < 0 ) return false;
+			if (t1 < 0.001f)			// really picky
+				return false;
 			else {
 				inter.t = t1;
 				// update intersection data
@@ -77,14 +82,22 @@ public:
 		}
 		// TWO solution
 		else {
-			if (t1 >= 0 && t2 >= 0) {
-				inter.t = fmin(t1, t2);
+			if (t1 > 0 && t2 > 0) {
+				float t = fmin(t1, t2);
+				if (t < 0.001f) {
+					t = t == t1 ? t2 : t1;
+					if (t< 0.001f) 
+						return false;
+				}
+				inter.t = t;
 
 			}
-			else if (t1 >= 0 && t2 < 0) {
+			else if (t1 > 0 && t2 < 0) {
+				if (t1 < 0.001f) return false;
 				inter.t = t1;
 			}
-			else if (t1 < 0 && t2 >= 0) {
+			else if (t1 < 0 && t2 > 0) {
+				if (t2 < 0.001f) return false;
 				inter.t = t2;
 			}
 			else return false;
@@ -119,3 +132,20 @@ public:
 		return false;
 	}
 };
+
+
+
+// 3/23/2023:
+// Problem (solved somehow): doing raytracing with transparent object
+// first calculating transmittance then reflection will causes self intersection (ray travel time < 0.001)
+// and thus have a different intersection point and new reflection/refraction rays
+// which is different from first calculating reflection and then transmittance (I wonder why 
+// calculating in such order will not have self intersection)
+
+// But why sphere?  inside the sphere, it has concave?
+// 
+// 
+// solution is checking 
+// if (t1 < 0.001f) return false;
+
+
