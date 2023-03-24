@@ -11,13 +11,11 @@ public:
 	Sphere() {
 		centerPos = Vector3f(0.f, 0.f, 0.f);
 		radius = 1.f;
-		
 	}
 
 	Sphere(float x, float y, float z, float r) {
 		centerPos = Vector3f(x, y, z);
 		radius = r;
-
 	}
 
 	virtual ~Sphere() {};
@@ -47,8 +45,6 @@ public:
 		else if (FLOAT_EQUAL(t1, t2)) {
 			// intersection is behind the ray direction, then false
 			if (t1 < 0 ) return false;
-			if (t1 < 0.001f)			// really picky
-				return false;
 			else {
 				inter.t = t1;
 				// update intersection data
@@ -83,21 +79,12 @@ public:
 		// TWO solution
 		else {
 			if (t1 > 0 && t2 > 0) {
-				float t = fmin(t1, t2);
-				if (t < 0.001f) {
-					t = t == t1 ? t2 : t1;
-					if (t< 0.001f) 
-						return false;
-				}
-				inter.t = t;
-
+				inter.t = t1;
 			}
 			else if (t1 > 0 && t2 < 0) {
-				if (t1 < 0.001f) return false;
 				inter.t = t1;
 			}
 			else if (t1 < 0 && t2 > 0) {
-				if (t2 < 0.001f) return false;
 				inter.t = t2;
 			}
 			else return false;
@@ -149,3 +136,15 @@ public:
 // if (t1 < 0.001f) return false;
 
 
+// completely solved:
+// change to current version of contribution calculation instead
+// and we don't have to do sphere intersection edition
+
+// reason for the phenomenon in previous version
+// remains unknown
+
+
+// 3/23/2023 20:43:
+// truly solved:
+// I use the same RayOrig for transmittanceand reflection
+// so the order matters

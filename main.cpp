@@ -22,11 +22,6 @@ int main(int argc, char* argv[]) {
 	r.render();
 	g.generate();
 
-	Vector3f normal = { -1,0,0 };
-	Vector3f incident = normalized( { 1, -1, 0 });
-	float etai = 1;
-	float etat = 1.2;
-
 
 	auto end = std::chrono::system_clock::now();
 	std::cout << "\nTime consumed: \n";

@@ -18,7 +18,8 @@
 
 
 #define MAX_DEPTH 9
-bool PRINT = false;
+#define EPSILON 0.00005f
+bool PRINT = false;	// debug helper
 
 /// <summary>
 /// this is the class perform computer graphics algorithms
@@ -27,7 +28,7 @@ bool PRINT = false;
 class Renderer {
 public:
 	// constructor, takes a PPMGenerator for future commands
-	Renderer(PPMGenerator *ppmg) {
+	Renderer(PPMGenerator* ppmg) {
 		g = ppmg;
 	}
 
@@ -81,9 +82,6 @@ public:
 		for (int y = 0; y < g->height; y++) {
 			Vector3f v_off = y * delta_v;
 			for (int x = 0; x < g->width; x++) {
-				PRINT = false;
-				if (x == 487 && y == 657) 
-					PRINT = true;
 
 				Vector3i& color = g->rgb.at(g->getIndex(x, y));		// update this color to change the rgb array
 				Vector3f h_off = x * delta_h;
@@ -140,7 +138,7 @@ private:
 			Intersection interTemp;
 			if (obj->intersect(origin, dir, interTemp)) {	// intersect also update intersection
 				// if the ray hits this object first, then we update intersection
-				if (interTemp.t < inter.t) {		// dealling with float number?: interTemp.t < inter.t - 0.00001
+				if (interTemp.t < inter.t) {
 					inter = interTemp;
 				}
 			}
@@ -151,19 +149,19 @@ private:
 		if (!inter.intersected) return g->bkgcolor;
 		// if hits light avatar, return the light color
 		if (inter.obj->isLight) return inter.obj->mtlcolor.diffuse;
-		if (PRINT) std::cout << "travel t: " << inter.t << "\n";
+		// if (PRINT) std::cout << "travel t: " << inter.t << "\n";
 		// **************** TEXUTRE ********************
 			// if texture is activated, change mtlcolor.diffuse to texture data
 		if (!FLOAT_EQUAL(-1.f, inter.textPos.x) && !FLOAT_EQUAL(-1.f, inter.textPos.y)) {
 			inter.mtlcolor.diffuse = g->textures.at(inter.textureIndex)
 				.getRGBat(inter.textPos.x, inter.textPos.y);
 		}
-			// if do shading with normal map
+		// if do shading with normal map
 		if (inter.normalMapIndex != -1) {
 			changeNormalDir(inter);
 		}
 		// **************** TEXUTRE ENDS ****************
-		
+
 		// if have the nearest intersection, calculate color
 		Vector3f blinnPhongRes = Vector3f();
 		// do not only do blinnPhone when intersection point 
@@ -171,9 +169,8 @@ private:
 		blinnPhongRes = blinnPhongShader(origin, inter);
 
 		// ****** calculate reflection and transmittance contribution
-		Vector3f rayOrig = inter.pos;
-		Vector3f reflectRes = Vector3f();
-		Vector3f transmiRes = Vector3f();
+		Vector3f refRayOrig = inter.pos;		// reflection ray origin
+		Vector3f traRayOrig = inter.pos;		// tranmittance ray origin
 		Vector3f N = normalized(inter.nDir);
 		float fr = 0;
 		float eta_i = 0, eta_t = 0;
@@ -181,7 +178,7 @@ private:
 		// 3/18/2023 23:59:  deal with reflection and refrection individually 
 		// when reflection, we are not entering or leaving the object 
 		// check if we are entering a object or escaping from it
-		
+
 		// get ior depending on the location of incident ray
 		// N.dot(-dir)
 		float cosN_Dir = N.dot(-dir);
@@ -197,60 +194,42 @@ private:
 
 			fr = fresnel(dir, N, eta_i, eta_t);
 		}
-		Vector3f refractDir = getRefractionDir(dir, N, eta_i, eta_t);
+
+		Vector3f refractDir = normalized(getRefractionDir(dir, N, eta_i, eta_t));
+		Vector3f reflectDir = normalized(getReflectionDir(dir, inter.nDir));
+		float cos_refle_N = reflectDir.dot(N);
+		float cos_refra_N = refractDir.dot(N);
+		// surface normal always points outward direction
+		// if angle between surface normal and reflection dir > 90 degree
+		// then we are inside of the object
+		// other wise we are outside 
+		if (cos_refle_N < 0) {	// have to be picky about this offset: try to edit EPSILON
+			refRayOrig = refRayOrig - EPSILON * N;
+		}
+		else {
+			refRayOrig = refRayOrig + EPSILON * N;
+		}
+		if (cos_refra_N < 0) {	// refraction ray is on the opposite side of N
+			// then we enter the obj
+			// do rayOrig shifting
+			traRayOrig = traRayOrig - EPSILON * N;
+		}
+		else {	// refraction ray is on the same side of N
+			// then we leave the obj
+			traRayOrig = traRayOrig + EPSILON * N;
+		}
+
 		// total internal reflection
 		if (FLOAT_EQUAL(0, refractDir.norm()))	fr = 1.f;
+		Vector3f R_lambda;
+		Vector3f T_lambda;
 
+		if (!FLOAT_EQUAL(1.f, inter.mtlcolor.alpha) && !FLOAT_EQUAL(fr, 1.f))	// if object is transparent && exclude TIR
+			T_lambda = traceRay(traRayOrig, refractDir, depth + 1);
+		if (inter.mtlcolor.ks != 0)		// if object is reflective 
+			R_lambda = traceRay(refRayOrig, reflectDir, depth + 1);
 
-		// ****************** REFLECTION ******************
-		// if the object is reflective, then calculate reflection contribution
-		if (!FLOAT_EQUAL(0.f, inter.mtlcolor.ks)) {	
-			// do Ray origin offset to avoid acne
-			Vector3f reflectDir = normalized(getReflectionDir(dir, inter.nDir));
-
-			float cosAngle = reflectDir.dot(N);
-			// surface normal always points outward direction
-			// if angle between surface normal and reflection dir > 90 degree
-			// then we are inside of the object
-			// other wise we are outside 
-			if (cosAngle < 0) {	// have to be picky about this offset
-				rayOrig = rayOrig - 0.00005f * N;
-			}
-			else {
-				rayOrig = rayOrig + 0.00005f * N;
-			}
-
-			Vector3f R_lambda = traceRay(rayOrig, reflectDir, depth + 1);
-			reflectRes = fr * R_lambda;
-		}
-		// ****************** TRANSMITTANCE ******************
-		// 3/21/2023:
-		// exchange calculation order with REFLECTION gives a strange incorrect result
-		// 3/23/2023: this problem remains unsolved
-		// 3/23/2023: 13:23 somehow solved, see the comments at bottom of Sphere.hpp 
-		// if the object is not fully opaque, then calculate transmittance contribution
-		// if fr == 1, then we have no transmittance contribution (total internal reflection)
-		if (!FLOAT_EQUAL(1.f, inter.mtlcolor.alpha) && !FLOAT_EQUAL(1.f, fr)) {
-			refractDir = normalized(refractDir);
-			Vector3f T_lambda = Vector3f();
-
-			float cos_refra_N = refractDir.dot(N);
-			if (cos_refra_N < 0) {	// refraction ray is on the opposite side of N
-				// then we enter the obj
-				// do rayOrig shifting
-				rayOrig = rayOrig - 0.0001f * N;		// have to be picky about this offset
-			}
-			else {	// refraction ray is on the same side of N
-				// then we leave the obj
-				rayOrig = rayOrig + 0.0001f * N;
-			}
-
-			T_lambda = traceRay(rayOrig, refractDir, depth + 1);
-			transmiRes = (1 - fr) * (1 - inter.mtlcolor.alpha) * T_lambda;
-
-		}
-
-		return blinnPhongRes + reflectRes + transmiRes;
+		return blinnPhongRes + fr * R_lambda + (1 - fr) * (1 - inter.mtlcolor.alpha) * T_lambda;
 	}
 
 
@@ -317,7 +296,7 @@ private:
 					powf(std::max(h.dot(inter.nDir), 0.f), inter.mtlcolor.n);
 			}
 		}
-			
+
 		res = ambient + diffuse + specular;
 
 		// do depthcueing 
@@ -389,7 +368,7 @@ private:
 		for (int i = 0; i < sampleNum; i++) {
 			Vector3f lightPos = randomSampleTriangle(light->triangle);
 			sum += getShadowCoeffi(p, lightPos);
-			
+
 		}
 		return sum / sampleNum;
 	}
@@ -401,8 +380,6 @@ private:
 
 		switch (inter.obj->objectType)
 		{
-		
-			
 		case TRIANGLE: {
 			Triangle* t = static_cast<Triangle*>(inter.obj);
 			// our triangle start from lower left corner and go counterclockwise
@@ -433,13 +410,12 @@ private:
 			inter.nDir = normalized(res);
 			break;
 		}
-					 
 
 		case SPEHRE: {
 			Vector3f nDir = inter.nDir;
 			Vector3f T = Vector3f(-nDir.y / sqrtf(nDir.x * nDir.x + nDir.y * nDir.y),
 				nDir.x / sqrtf(nDir.x * nDir.x + nDir.y * nDir.y), 0);
-			
+
 			Vector3f B = crossProduct(nDir, T);
 
 			Vector3f res;
@@ -450,7 +426,7 @@ private:
 			inter.nDir = normalized(res);
 			break;
 		}
-		
+
 		default:
 			break;
 		}
@@ -464,19 +440,9 @@ private:
 /*
 	exchange reflection and transmittance order:
 
-	test:
-			at specific pixel, 
-					PRINT = false;
-				if (x == 450 && y == 680) PRINT = true;
-
-			during rendering 
-		if (PRINT) {
-		std::cout << "depth: " << depth << ", refraction dir: " << refractDir.x << ", "
-			<< refractDir.y << ", " << refractDir.z << std::endl;
-		std::cout << "           inter: " << inter.pos.x << ", " << inter.pos.y << ", " << inter.pos.z << std::endl;
-	}
-
-
-
+	3/23/2023 20:43:
+	problem solved:
+	I use the same RayOrig for transmittance and reflection
+	so the order matters
 
 */

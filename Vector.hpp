@@ -70,6 +70,12 @@ public:
 		z = 0.f;
 	}
 
+	Vector3f(float i) {		// implicit 	Vector3f a = 1;
+		x = i;
+		y = i;
+		z = i;
+	}
+
 	// ************************* vector operations *************************
 	
 	// const float&		const lvalue reference, can point to both lvalue and rvalue
