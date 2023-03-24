@@ -164,7 +164,8 @@ private:
 		int type = -1;		
 		if (key.compare("v") == 0) type = 0;
 		else if (key.compare("sphere") == 0) type = 1;
-		else if (!key.compare("f")) type = 2;
+		else if (!key.compare("f")) 
+			type = 2;
 		else if (!key.compare("vn")) type = 3;
 		else if (!key.compare("vt")) type = 4;
 
