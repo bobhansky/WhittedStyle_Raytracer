@@ -159,6 +159,7 @@ void showProgress(float prog) {
 		else if (i == pos) std::cout << ">";
 		else std::cout << " ";
 	}
+
 	std::cout << int(prog * 100.0) << " %\r";
 }
 

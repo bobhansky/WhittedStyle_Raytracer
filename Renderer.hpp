@@ -18,7 +18,7 @@
 
 
 #define MAX_DEPTH 9
-#define EPSILON 0.00005f
+#define EPSILON 0.00005f		// be picky about it
 bool PRINT = false;	// debug helper
 
 /// <summary>
@@ -82,7 +82,6 @@ public:
 		for (int y = 0; y < g->height; y++) {
 			Vector3f v_off = y * delta_v;
 			for (int x = 0; x < g->width; x++) {
-
 				Vector3i& color = g->rgb.at(g->getIndex(x, y));		// update this color to change the rgb array
 				Vector3f h_off = x * delta_h;
 				Vector3f pixelPos = ul + h_off + v_off + c_off_h + c_off_v;		// pixel center position in world space
@@ -151,8 +150,9 @@ private:
 		if (inter.obj->isLight) return inter.obj->mtlcolor.diffuse;
 		// if (PRINT) std::cout << "travel t: " << inter.t << "\n";
 		// **************** TEXUTRE ********************
-			// if texture is activated, change mtlcolor.diffuse to texture data
-		if (!FLOAT_EQUAL(-1.f, inter.textPos.x) && !FLOAT_EQUAL(-1.f, inter.textPos.y)) {
+			// if diffuse texture is activated, change mtlcolor.diffuse to texture data
+		if (! FLOAT_EQUAL(-1.f, inter.textureIndex) && !FLOAT_EQUAL(-1.f, inter.textPos.x) 
+			&& !FLOAT_EQUAL(-1.f, inter.textPos.y)) {
 			inter.mtlcolor.diffuse = g->textures.at(inter.textureIndex)
 				.getRGBat(inter.textPos.x, inter.textPos.y);
 		}
