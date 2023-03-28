@@ -242,11 +242,11 @@ private:
 				processFlat(t0, t1, t2, t);
 			else if (std::regex_match(t0, smooth) && std::regex_match(t1, smooth) && std::regex_match(t2, smooth))
 				processSmooth(t0, t1, t2, t);
-			else if (std::regex_match(t0, smooth_text) && std::regex_match(t0, smooth_text)
-				&& std::regex_match(t0, smooth_text))
+			else if (std::regex_match(t0, smooth_text) && std::regex_match(t1, smooth_text)
+				&& std::regex_match(t2, smooth_text))
 				processSmoothText(t0, t1, t2, t);
-			else if (std::regex_match(t0, flat_text) && std::regex_match(t0, flat_text)
-				&& std::regex_match(t0, flat_text))
+			else if (std::regex_match(t0, flat_text) && std::regex_match(t1, flat_text)
+				&& std::regex_match(t2, flat_text))
 				processFlatText(t0, t1, t2, t);
 			else throw std::runtime_error("f face information is not valid");
 
