@@ -182,6 +182,9 @@ private:
 		// get ior depending on the location of incident ray
 		// N.dot(-dir)
 		float cosN_Dir = N.dot(-dir);
+		// if ray is tangent to the obj, do not consider it as intersected
+		if (fabs(cosN_Dir - 0.f) < 0.0001f) return g->bkgcolor;
+
 		if (cosN_Dir > 0) {	// if incident ray is outside
 			eta_i = g->eta;
 			eta_t = inter.mtlcolor.eta;
