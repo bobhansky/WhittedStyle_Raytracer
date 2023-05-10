@@ -1,0 +1,55 @@
+﻿  main.cpp
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\include\global.hpp(88,18): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\include\global.hpp(156,10): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\include\Light.hpp(36,1): warning C4305: 'argument': truncation from 'double' to 'float'
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\include\Sphere.hpp(29,11): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\include\Sphere.hpp(61,14): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\include\Sphere.hpp(65,1): warning C4305: '+=': truncation from 'double' to 'float'
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\include\Sphere.hpp(66,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\include\Sphere.hpp(103,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\include\Sphere.hpp(107,1): warning C4305: '+=': truncation from 'double' to 'float'
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\include\Sphere.hpp(108,16): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\include\Texture.hpp(21,9): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\include\Texture.hpp(22,9): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\include\Texture.hpp(27,1): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\include\OBJ_Loader.h(951,33): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\include\PPMGenerator.hpp(196,80): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\include\PPMGenerator.hpp(196,62): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\include\PPMGenerator.hpp(196,44): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\include\PPMGenerator.hpp(559,1): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\include\PPMGenerator.hpp(564,1): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\include\PPMGenerator.hpp(580,1): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\include\PPMGenerator.hpp(585,1): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\include\PPMGenerator.hpp(708,1): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\include\PPMGenerator.hpp(715,1): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\include\PPMGenerator.hpp(744,1): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\include\PPMGenerator.hpp(790,1): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\include\PPMGenerator.hpp(797,1): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\include\PPMGenerator.hpp(804,1): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\include\Renderer.hpp(96,54): warning C4244: 'argument': conversion from 'int' to 'const float', possible loss of data
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\include\Renderer.hpp(98,56): warning C4244: 'argument': conversion from 'int' to 'const float', possible loss of data
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\include\Renderer.hpp(105,21): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\include\Renderer.hpp(112,22): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\include\Renderer.hpp(128,19): warning C4244: '=': conversion from '_Ty' to 'int', possible loss of data
+          with
+          [
+              _Ty=float
+          ]
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\include\Renderer.hpp(129,19): warning C4244: '=': conversion from '_Ty' to 'int', possible loss of data
+          with
+          [
+              _Ty=float
+          ]
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\include\Renderer.hpp(130,19): warning C4244: '=': conversion from '_Ty' to 'int', possible loss of data
+          with
+          [
+              _Ty=float
+          ]
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\include\Renderer.hpp(176,32): warning C4244: 'argument': conversion from 'int' to 'const float', possible loss of data
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\src\main.cpp(24,44): warning C4305: 'argument': truncation from 'double' to 'float'
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\src\main.cpp(25,42): warning C4305: 'argument': truncation from 'double' to 'float'
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\src\main.cpp(26,21): warning C4305: '=': truncation from 'double' to 'float'
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\src\main.cpp(27,20): warning C4305: '=': truncation from 'double' to 'float'
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\src\main.cpp(30,23): warning C4305: '=': truncation from 'double' to 'float'
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\src\main.cpp(31,22): warning C4305: '=': truncation from 'double' to 'float'
+  WhittedStyleRT.vcxproj -> D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\x64\Debug\WhittedStyleRT.exe
