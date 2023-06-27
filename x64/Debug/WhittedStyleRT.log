@@ -50,6 +50,7 @@ D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\Wh
 D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\src\main.cpp(25,42): warning C4305: 'argument': truncation from 'double' to 'float'
 D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\src\main.cpp(26,21): warning C4305: '=': truncation from 'double' to 'float'
 D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\src\main.cpp(27,20): warning C4305: '=': truncation from 'double' to 'float'
+D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\src\main.cpp(28,20): warning C4305: '=': truncation from 'double' to 'float'
 D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\src\main.cpp(30,23): warning C4305: '=': truncation from 'double' to 'float'
 D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\WhittedStyleRT\src\main.cpp(31,22): warning C4305: '=': truncation from 'double' to 'float'
   WhittedStyleRT.vcxproj -> D:\Documents\cpp_workplace\CG\CSCI5607\CSCI5607\WhittedStyleRT\WhittedStyleRT\x64\Debug\WhittedStyleRT.exe

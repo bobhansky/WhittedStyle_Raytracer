@@ -150,10 +150,35 @@ Intersection getIntersection(BVHNode* node, const Vector3f& rayOrig, const Vecto
 	}
 
 	// if node is a internal node
-	// then return the nearest intersection         here
+	// then return the nearest intersection 
 	Intersection linter = getIntersection(node->left, rayOrig, rayDir);
 	Intersection rinter = getIntersection(node->right, rayOrig, rayDir);
 
 	if (linter.t <= rinter.t) return linter;
 	return rinter;
+}
+
+// test if there's a intesection, used for shadow coefficient
+bool hasIntersection(BVHNode* node, const Vector3f& rayOrig, const Vector3f& rayDir) {
+	if (!node) return false;
+	
+	// if the node is a leaf node
+	// then test the intersection of ray and objects
+	// in this project, leaf box always contain only 1 object
+	if (!node->left && !node->right) {
+		Intersection inter;
+		node->obj->intersect(rayOrig, rayDir, inter);
+		if (inter.obj->isLight) return false;	// do not count for light 
+
+		return inter.intersected;
+	}
+
+	// if node is a internal node
+	// then return the nearest intersection 
+	Intersection linter = getIntersection(node->left, rayOrig, rayDir);
+	if (linter.intersected) return true;
+	Intersection rinter = getIntersection(node->right, rayOrig, rayDir);
+	if (rinter.intersected) return true;
+
+	return false;
 }
