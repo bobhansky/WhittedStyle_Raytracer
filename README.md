@@ -103,3 +103,8 @@ f   v1/vt1/vn1  v2/vt2/vn2   v3/vt3/vn3  // smooth-shaded textured triangle
 1. root dir to use cmake
 2. when you get executable file, call it with the name of configuration file as the argument.
 3. output img will be named after the config file. e.g.  calling with config.txt generates config.ppm
+
+
+# sample img:
+
+![alt text](https://github.com/bobhansky/WhittedStyle_Raytracer/blob/main/out/water_bunny_tex.png)
