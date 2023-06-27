@@ -108,3 +108,6 @@ f   v1/vt1/vn1  v2/vt2/vn2   v3/vt3/vn3  // smooth-shaded textured triangle
 # sample img:
 
 ![alt text](https://github.com/bobhansky/WhittedStyle_Raytracer/blob/main/out/water_bunny_tex.png)
+
+
+![alt text](https://github.com/bobhansky/WhittedStyle_Raytracer/blob/main/out/bunny_softShadow_glass.png)
