@@ -27,8 +27,6 @@ class BVHStrategy : public IIntersectStrategy {
 		if (!node->bound.IntersectRay(rayOrig, rayDir))
 			return 1;
 
-
-
 		// if the node is a leaf node
 		// then test the intersection of ray and objects
 		// in this project, leaf box always contain only 1 object

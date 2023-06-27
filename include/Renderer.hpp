@@ -352,16 +352,24 @@ private:
 		// loop through all the objects in the scene 
 		// if there's one valid intersection, thrn return 0
 		float res = 1;
-		for (auto& i : g->scene.objList) {
-			// if (i.get() == p.obj) continue;			// do not test intersection with itself
-			if (i->isLight) continue;				// do not test with light avatar
-			Intersection p_light_inter;
 
-			if (i->intersect(orig, raydir, p_light_inter)) {
-				res = res * (1 - p_light_inter.mtlcolor.alpha);
+		if (!EXPEDITE) {
+			for (auto& i : g->scene.objList) {
+				// if (i.get() == p.obj) continue;			// do not test intersection with itself
+				if (i->isLight) continue;				// do not test with light avatar
+				Intersection p_light_inter;
+
+				if (i->intersect(orig, raydir, p_light_inter)) {
+					res = res * (1 - p_light_inter.mtlcolor.alpha);
+				}
 			}
 		}
-		// no intersection
+		else {	// use BVH, note: only call this line under soft shadow && EXPEDITE
+			if (hasIntersection(g->scene.BVHaccelerator->getNode(), orig, raydir))
+				return 0;
+			return 1;
+		}
+
 		return res;
 	}
 
@@ -393,7 +401,7 @@ private:
 	// randomly sample in the area multiple times and then average each result;
 	float getAreaLightShadowCoeffi(Intersection& p, Light* light) {
 		float sum = 0.f;
-		int sampleNum = 100;
+		int sampleNum = 50;
 		for (int i = 0; i < sampleNum; i++) {
 			Vector3f lightPos = randomSampleTriangle(light->triangle);
 			sum += getShadowCoeffi(p, lightPos);
