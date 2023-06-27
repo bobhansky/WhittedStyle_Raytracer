@@ -87,9 +87,19 @@ vt   u2 v2
 
 # list of triangle definitions, consisting of appropriate indices into the vertex array, starting at 1 (not 0)
 
+
+
+
+
 <pre>
 f   v1 v2 v3                             // flat-shaded triangle
 f   v1//vn1    v2//vn2    v3//vn3        // smooth-shaded triangle 
 f   v1/vt1     v2/vt2     v3/vt3         // flat-shaded textured triangle 
 f   v1/vt1/vn1  v2/vt2/vn2   v3/vt3/vn3  // smooth-shaded textured triangle 
 </pre>
+
+
+### usage:
+1. root dir to use cmake
+2. when you get executable file, call it with the name of configuration file as the argument.
+3. output img will be named after the config file. e.g.  calling with config.txt generates config.ppm
