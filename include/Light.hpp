@@ -29,9 +29,9 @@ public:
 		// do not initialize if this light is a diretional light
 		if (FLOAT_EQUAL(pos.w, 0.f)) return;
 
-		triangle.v0 = Vector3f(pos.x, pos.y, pos.z);
-		triangle.v1 = Vector3f(pos.x+1, pos.y, pos.z-1);
-		triangle.v2 = Vector3f(pos.x, pos.y, pos.z - 1);
+		triangle.v0 = Vector3f(pos.x, pos.y, pos.z);	// play with this area to adjust soft shadow 
+		triangle.v1 = Vector3f(pos.x+7, pos.y, pos.z-7);
+		triangle.v2 = Vector3f(pos.x, pos.y, pos.z - 7);
 
 		Vector3f center = 0.33333 * triangle.v0 + 0.33333 * triangle.v1 + 0.33333 * triangle.v2;
 		Vector3f offset = triangle.v0 - center;		// light position - center, the offset for center to get the light pos
