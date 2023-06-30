@@ -26,6 +26,7 @@ class BaseInterStrategy : public IIntersectStrategy {
 		Vector3f orig = p.pos;
 		orig = orig + 0.0005f * p.nDir;
 		Vector3f raydir = normalized(lightPos - orig);
+		float distance = (lightPos - orig).norm();
 
 		// loop through all the objects in the scene 
 		// if there's one valid intersection, thrn return 0
@@ -35,7 +36,7 @@ class BaseInterStrategy : public IIntersectStrategy {
 			if (i->isLight) continue;				// do not test with light avatar
 			Intersection p_light_inter;
 
-			if (i->intersect(orig, raydir, p_light_inter)) {
+			if (i->intersect(orig, raydir, p_light_inter) && p_light_inter.t < distance) {
 				res = res * (1 - p_light_inter.mtlcolor.alpha);
 			}
 		}

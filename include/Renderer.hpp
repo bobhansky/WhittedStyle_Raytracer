@@ -24,7 +24,7 @@
 
 #define MAX_DEPTH 9
 #define EPSILON 0.00005f		// be picky about it
-bool PRINT = false;	// debug helper
+bool PRINT = true;	// debug helper
 
 #define EXPEDITE true			// if you need BVH to expedite intersection, set it true
 
@@ -104,7 +104,7 @@ public:
 		for (int y = 0; y < g->height; y++) {
 			Vector3f v_off = y * delta_v;
 			for (int x = 0; x < g->width; x++) {
-				if (x == 350 && y == 339)
+				if (x == 80 && y == 223)
 					PRINT = true;
 
 
@@ -287,7 +287,7 @@ private:
 				if (g->shadowType == 0) {
 					shadow = interStrategy->getShadowCoeffi(g->scene, inter, lightPos);
 				}
-				// ---------------soft shadow,  not applicable if BVH is on, or very slow
+				// ---------------SOFT shadow
 				else {
 					shadow = getAreaLightShadowCoeffi(inter, light.get());
 				}
@@ -346,8 +346,9 @@ private:
 	// return 1 otherwise
 	float getShadowCoeffi(Intersection& p, Vector3f& lightPos) {
 		Vector3f orig = p.pos;
-		orig = orig + EPSILON * p.nDir;
+		orig = orig + 0.0005f * p.nDir;
 		Vector3f raydir = normalized(lightPos - orig);
+		float distance = (lightPos - orig).norm();
 
 		// loop through all the objects in the scene 
 		// if there's one valid intersection, thrn return 0
@@ -359,13 +360,14 @@ private:
 				if (i->isLight) continue;				// do not test with light avatar
 				Intersection p_light_inter;
 
-				if (i->intersect(orig, raydir, p_light_inter)) {
+
+				if (i->intersect(orig, raydir, p_light_inter) && p_light_inter.t < distance && !p_light_inter.obj->isLight) {
 					res = res * (1 - p_light_inter.mtlcolor.alpha);
 				}
 			}
 		}
 		else {	// use BVH, note: only call this line under soft shadow && EXPEDITE
-			if (hasIntersection(g->scene.BVHaccelerator->getNode(), orig, raydir))
+			if (hasIntersection(g->scene.BVHaccelerator->getNode(), orig, raydir, distance))
 				return 0;
 			return 1;
 		}
@@ -388,6 +390,7 @@ private:
 			if (i.get() == p.obj) continue;			// do not test intersection with itself
 			if (i->isLight) continue;				// do not test with light avatar
 			Intersection p_light_inter;
+
 
 			if (i->intersect(orig, raydir, p_light_inter)) {
 				res = res * (1 - p_light_inter.mtlcolor.alpha);
